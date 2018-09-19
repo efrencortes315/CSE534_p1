@@ -8,14 +8,41 @@ import java.io.*;
 import java.util.ArrayList;
 import org.xbill.DNS.*;
 import java.util.*;
+import java.net.*; 
 class DNSproject { 
+		
+		static int type = Type.A, dclass = DClass.IN;
     public static void main(String[] args)  throws IOException {
-		String hostName = "www.stupid.com";
+		
 		ArrayList<String> rList = generateListRootServers();
-		SimpleResolver a = new SimpleResolver();
-		Lookup b = new Lookup(hostName);
-		a.setTimeout(5);
-    }
+		Message query = null;
+		Message response = null;
+		SimpleResolver resolver;
+		Name reqSite = Name.fromString(args[0], Name.root); //takes first argument given from command line and makes it a name object
+		
+		boolean found = false;
+		int ptr = 0;
+		
+		while(found==false){
+			
+			resolver = new SimpleResolver(rList.get(ptr));//
+			Record record = Record.newRecord(reqSite,Type.A, DClass.IN);//requested site, record type, dns internet class
+			query = Message.newQuery(record);
+			response = resolver.send(query);
+			
+			if(response!=null){
+				found = true;
+			}else{
+				ptr++;
+			}
+			if(ptr>= rList.size()){
+				System.out.println("Error");
+			}
+		}
+			System.out.println(response.getHeader().toString());
+			
+		
+		}
 	public static ArrayList<String> generateListRootServers() throws IOException{
 		
 		ArrayList<String> list = new ArrayList<String>();
@@ -46,7 +73,7 @@ class DNSproject {
 		//System.out.println(list.toString());
 		return list;
 	}
-
+	
 
 
 
