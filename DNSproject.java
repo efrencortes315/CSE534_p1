@@ -13,13 +13,21 @@ class DNSproject {
 		
 		static int type = Type.A, dclass = DClass.IN;
     public static void main(String[] args)  throws IOException {
-		
+		//begin initiation//
 		ArrayList<String> rList = generateListRootServers();
 		Message query = null;
 		Message response = null;
 		SimpleResolver resolver;
-		Name reqSite = Name.fromString(args[0], Name.root); //takes first argument given from command line and makes it a name object
+		Name reqSite= null;
+		try{
+			reqSite = Name.fromString(args[0], Name.root); //takes first argument given from command line and makes it a name object
+		}catch(ArrayIndexOutOfBoundsException e){
+			System.out.println("Error, please make sure you enter a target website to resolve");
+		}
 		
+		//end initiation//
+		
+		//begin trying the first root server and loop until one of them responds//
 		boolean found = false;
 		int ptr = 0;
 		
@@ -39,9 +47,13 @@ class DNSproject {
 				System.out.println("Error");
 			}
 		}
-			System.out.println(response.getHeader().toString());
-			
-		
+		//System.out.println(response.toString());
+		String inf = response.toString(); //gets full result of the query to the root serve
+
+		//response was found and stored in a string object//
+		Record[] answerSection = response.getSectionArray(Section.ANSWER);
+		Record[] authoritySection = response.getSectionArray(Section.AUTHORITY);
+		System.out.println(answerSection[0]);
 		}
 	public static ArrayList<String> generateListRootServers() throws IOException{
 		
@@ -74,36 +86,5 @@ class DNSproject {
 		return list;
 	}
 	
-
-
-
-
-
-
-
-	public static String resolve(String host, int addrType) {
-    try {
-        Lookup lookup = new Lookup(host, addrType);
-        SimpleResolver resolver = new SimpleResolver("114.114.114.114");
-        resolver.setTimeout(5);
-        lookup.setResolver(resolver);
-        Record[] result = lookup.run();
-        if (result == null) return null;
-
-        List<Record> records = java.util.Arrays.asList(result);
-        java.util.Collections.shuffle(records);
-        for (Record record : records) {
-            if (addrType == Type.A) {
-                return ((ARecord) record).getAddress().getHostAddress();
-            } else if (addrType == Type.AAAA) {
-                return ((AAAARecord) record).getAddress().getHostAddress();
-            }
-        }
-
-    } catch (Exception ex) {
-        return null;
-    }
-
-    return null;
-}
+	
 	}
